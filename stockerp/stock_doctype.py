@@ -1,18 +1,26 @@
 
 
+from openbb import obb
+import pandas as pd
+
 class Stock:
-    def __init__(self, symbol, name):
-        self.symbol = symbol
-        self.name = name
-        self.historical_data = []
-        
-    def add_price_point(self, timestamp, price, volume):
-        self.historical_data.append({
-            'timestamp': timestamp,
-            'price': price,
-            'volume': volume
-        })
-        
-    def get_timeseries_data(self):
-        return self.historical_data
+    @staticmethod
+    def get_timeseries_data(symbol, period="1y"):
+        try:
+            # Fetch historical data from OpenBB
+            data = obb.equity.price.historical(symbol, provider="yfinance", period=period)
+            df = data.to_df()
+            
+            # Format for frontend
+            return [
+                {
+                    "date": str(idx) if isinstance(idx, pd.Timestamp) else str(idx),
+                    "price": row['close'],
+                    "volume": row['volume']
+                }
+                for idx, row in df.iterrows()
+            ]
+        except Exception as e:
+            print(f"Error fetching data: {e}")
+            return []
 

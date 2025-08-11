@@ -1,0 +1,9 @@
+
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<iframe 
+  src="http://localhost:52643?symbol={{ doc.symbol }}" 
+  style="width:100%; height:80vh; border:none;"
+></iframe>
+{% endblock %}
