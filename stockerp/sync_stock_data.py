@@ -5,11 +5,11 @@ import sqlite3
 import pandas as pd
 from stock_doctype import Stock
 
+from setup_db import initialize_database  # Add database initialization
 DB_PATH = '/workspace/stockerp/stock_data.db'
 
 def sync_to_db(symbol):
-    """Sync stock data to database"""
-    try:
+    """Sync stock data to database"""    try:
         # Fetch data from OpenBB
         data = Stock.get_timeseries_data(symbol, period='max')
         
@@ -32,6 +32,9 @@ def sync_to_db(symbol):
         conn.close()
 
 if __name__ == '__main__':
+    # Initialize database before first sync
+    initialize_database()
+    
     # Initial sync for popular symbols
     symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
     for symbol in symbols:
