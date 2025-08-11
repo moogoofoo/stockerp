@@ -1,0 +1,10 @@
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:58643
+ * Running on http://172.17.0.3:58643
+[33mPress CTRL+C to quit[0m
+172.17.0.1 - - [11/Aug/2025 19:44:43] "[33mGET / HTTP/1.1[0m" 404 -
+172.17.0.1 - - [11/Aug/2025 19:45:22] "[33mGET / HTTP/1.1[0m" 404 -
+172.17.0.1 - - [11/Aug/2025 19:45:28] "[33mGET / HTTP/1.1[0m" 404 -
