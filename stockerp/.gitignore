@@ -1,0 +1,21 @@
+
+
+# Ignore virtual environment
+venv/
+
+# Ignore log files
+*.log
+
+# Ignore database file
+stock_data.db
+
+# Ignore environment variables
+.env
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore macOS system files
+.DS_Store
+

@@ -1,26 +1,35 @@
 
 import schedule
 import time
-import sqlite3
+import mariadb
+import os
+from dotenv import load_dotenv
 import pandas as pd
 from stock_doctype import Stock
 
 from setup_db import initialize_database  # Add database initialization
-DB_PATH = '/workspace/stockerp/stock_data.db'
+load_dotenv()  # Load environment variables
 
 def sync_to_db(symbol):
-    """Sync stock data to database"""    try:
+    """Sync stock data to MariaDB database"""
+    try:
         # Fetch data from OpenBB
         data = Stock.get_timeseries_data(symbol, period='max')
         
-        # Connect to database
-        conn = sqlite3.connect(DB_PATH)
+        # Connect to MariaDB
+        conn = mariadb.connect(
+            user=os.getenv('DB_USER', 'root'),
+            password=os.getenv('DB_PASSWORD', ''),
+            host=os.getenv('DB_HOST', 'localhost'),
+            port=int(os.getenv('DB_PORT', 3306)),
+            database=os.getenv('DB_NAME', 'stockerp')
+        )
         cursor = conn.cursor()
         
         # Insert records
         for record in data:
             cursor.execute("""
-            INSERT OR IGNORE INTO stock_data (symbol, date, price, volume)
+            INSERT IGNORE INTO stock_data (symbol, date, price, volume)
             VALUES (?, ?, ?, ?)
             """, (symbol, record['date'], record['price'], record['volume']))
         
