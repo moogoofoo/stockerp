@@ -2,7 +2,7 @@
 import schedule
 import time
 from core.database import db_session
-from stock_doctype import Stock
+from mock_data import generate_mock_stock_data
 from core.pickle_models import PickledStockData
 import pandas as pd
 import pickle
@@ -10,12 +10,10 @@ import pickle
 def sync_to_db(symbol):
     """Sync entire stock timeseries as pickled DataFrame"""
     try:
-        # Fetch data from OpenBB and convert to DataFrame
-        data = Stock.get_timeseries_data(symbol, period='max')
-        df = pd.DataFrame(data)
+        # Generate mock stock data
+        df = generate_mock_stock_data(symbol, days=365)
         
-        # Add symbol column to DataFrame
-        df['symbol'] = symbol
+        # Add symbol column to DataFrame (already included in mock data)
         
         # Pickle the DataFrame
         pickled_df = pickle.dumps(df)
