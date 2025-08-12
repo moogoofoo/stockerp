@@ -19,3 +19,7 @@ stock_data.db
 # Ignore macOS system files
 .DS_Store
 
+venv/
+# IDE files
+.vscode/
+.idea/
