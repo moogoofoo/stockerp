@@ -1,48 +1,51 @@
 
 import schedule
 import time
-import mariadb
-import os
-from dotenv import load_dotenv
-import pandas as pd
+from core.database import db_session
 from stock_doctype import Stock
-
-from setup_db import initialize_database  # Add database initialization
-load_dotenv()  # Load environment variables
+from core.pickle_models import PickledStockData
+import pandas as pd
+import pickle
 
 def sync_to_db(symbol):
-    """Sync stock data to MariaDB database"""
+    """Sync entire stock timeseries as pickled DataFrame"""
     try:
-        # Fetch data from OpenBB
+        # Fetch data from OpenBB and convert to DataFrame
         data = Stock.get_timeseries_data(symbol, period='max')
+        df = pd.DataFrame(data)
         
-        # Connect to MariaDB
-        conn = mariadb.connect(
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', ''),
-            host=os.getenv('DB_HOST', 'localhost'),
-            port=int(os.getenv('DB_PORT', 3306)),
-            database=os.getenv('DB_NAME', 'stockerp')
-        )
-        cursor = conn.cursor()
+        # Add symbol column to DataFrame
+        df['symbol'] = symbol
         
-        # Insert records
-        for record in data:
-            cursor.execute("""
-            INSERT IGNORE INTO stock_data (symbol, date, price, volume)
-            VALUES (?, ?, ?, ?)
-            """, (symbol, record['date'], record['price'], record['volume']))
+        # Pickle the DataFrame
+        pickled_df = pickle.dumps(df)
         
-        conn.commit()
-        print(f"Synced {len(data)} records for {symbol}")
+        with db_session() as session:
+            # Check if record exists
+            existing = session.query(PickledStockData).filter_by(symbol=symbol).first()
+            
+            if existing:
+                # Update existing record
+                existing.data_frame = pickled_df
+            else:
+                # Create new record
+                stock_record = PickledStockData(
+                    symbol=symbol,
+                    data_frame=pickled_df
+                )
+                session.add(stock_record)
+            
+            print(f"Synced {len(df)} records for {symbol} as pickled DataFrame")
     except Exception as e:
         print(f"Sync failed for {symbol}: {str(e)}")
-    finally:
-        conn.close()
 
 if __name__ == '__main__':
-    # Initialize database before first sync
-    initialize_database()
+    from core.database import get_engine
+    from core.pickle_models import Base
+    
+    # Create tables for pickled data model
+    engine = get_engine()
+    Base.metadata.create_all(engine)
     
     # Initial sync for popular symbols
     symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
