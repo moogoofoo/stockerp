@@ -1,49 +1,48 @@
-
-
-import mariadb
 import os
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, Column, Integer, String, Date, DECIMAL, BigInteger, TIMESTAMP, Index
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv()  # Load environment variables
+load_dotenv()
+
+Base = declarative_base()
+
+class StockData(Base):
+    __tablename__ = "stock_data"
+
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    symbol     = Column(String(10), nullable=False)
+    date       = Column(Date, nullable=False)
+    price      = Column(DECIMAL(10, 2), nullable=False)
+    volume     = Column(BigInteger, nullable=False)
+    created_at = Column(TIMESTAMP, server_default="CURRENT_TIMESTAMP")
+    updated_at = Column(
+        TIMESTAMP,
+        server_default="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+    )
+
+    __table_args__ = (
+        Index("idx_symbol", "symbol"),          # composite index
+        # Enforce the UNIQUE(symbol, date) constraint
+        Index("uq_symbol_date", "symbol", "date", unique=True),
+    )
 
 def initialize_database():
-    """Create database tables in MariaDB if they don't exist"""
+    """Create tables via SQLAlchemy if they do not yet exist."""
+    db_url = (
+        f"mysql+pymysql://{os.getenv('DB_USER', 'root')}:"
+        f"{os.getenv('DB_PASSWORD', '')}@"
+        f"{os.getenv('DB_HOST', 'localhost')}:"
+        f"{os.getenv('DB_PORT', 3306)}/"
+        f"{os.getenv('DB_NAME', 'stockerp')}"
+    )
+
+    engine = create_engine(db_url, echo=False, pool_pre_ping=True)
     try:
-        conn = mariadb.connect(
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', ''),
-            host=os.getenv('DB_HOST', 'localhost'),
-            port=int(os.getenv('DB_PORT', 3306)),
-            database=os.getenv('DB_NAME', 'stockerp')
-        )
-        cursor = conn.cursor()
-        
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS stock_data (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            symbol VARCHAR(10) NOT NULL,
-            date DATE NOT NULL,
-            price DECIMAL(10,2) NOT NULL,
-            volume BIGINT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE(symbol, date)
-        """)
-        
-        # Create index for faster symbol-based queries
-        cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_symbol 
-        ON stock_data (symbol)
-        """)
-        
-        conn.commit()
-        print("MariaDB database initialized successfully!")
-    except mariadb.Error as e:
+        Base.metadata.create_all(engine)
+        print("MariaDB database initialized successfully with SQLAlchemy!")
+    except Exception as e:
         print(f"Database initialization error: {e}")
-    finally:
-        if conn:
-            conn.close()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     initialize_database()
-
