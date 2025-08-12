@@ -1,26 +1,97 @@
+# StockERP - ERPNext Stock Timeseries Dashboard
 
-# StockERP Dashboard
-
-ERPNext integration for visualizing stock timeseries data using Dash and dash-echarts.
+StockERP extends ERPNext with timeseries stock visualization using Dash and dash-echarts.
 
 ## Features
-- Embedded dash-echarts in ERPNext stock views
 - Real-time stock data visualization
-- Custom ERPNext app for seamless integration
-- Dual-axis charts (price + volume)
+- Historical price tracking
+- Customizable time periods
+- Embedded in ERPNext UI
+- MariaDB backend
+- Automated data synchronization
 
-## Installation
+## Setup Instructions
+
+### 1. Prerequisites
+- Python 3.10+
+- MariaDB server
+- Node.js 16+ (for ERPNext)
+- Redis
+
+### 2. Clone Repository
 ```bash
-bench get-app stock_dashboard https://github.com/moogoofoo/stockerp/tree/stock-dashboard-demo
-bench install-app stock_dashboard
-bench restart
+git clone https://github.com/moogoofoo/stockerp.git
+cd stockerp
 ```
 
-## Configuration
-1. Start the Dash server:
-   ```bash
-   cd /path/to/stockerp
-   python dashboard.py
-   ```
-2. Access in ERPNext at: `/stock_dashboard?symbol=AAPL`
+### 3. Create Virtual Environment
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate  # Windows
+```
 
+### 4. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Database Setup
+1. Create MariaDB database:
+```sql
+CREATE DATABASE stockerp;
+CREATE USER 'stockerp'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON stockerp.* TO 'stockerp'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+2. Update `.env` file:
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=stockerp
+DB_USER=stockerp
+DB_PASSWORD=your_password
+```
+
+3. Initialize database:
+```bash
+python setup_db.py
+```
+
+### 6. Install ERPNext
+Follow official ERPNext installation guide:
+https://github.com/frappe/frappe_docker
+
+### 7. Install StockERP App in ERPNext
+1. Place the `stock_doctype.py` in your ERPNext app directory
+2. Add to `hooks.py`:
+```python
+doctype_js = {
+    "Stock": "public/js/stock.js"
+}
+```
+
+### 8. Start Services
+```bash
+./start_services.sh
+```
+
+Services will run on:
+- Backend API: http://localhost:58643
+- Frontend Dashboard: http://localhost:52643
+- Sync Service: Runs in background
+
+### 9. Access Dashboard in ERPNext
+1. Navigate to Stock Doctype in ERPNext
+2. The dashboard will be embedded in the stock detail view
+
+## Configuration
+- Modify `sync_stock_data.py` to change sync frequency
+- Edit `dashboard.py` to customize visualization
+- Update `app.py` to modify API endpoints
+
+## Troubleshooting
+- Check `backend.log` and `frontend.log` for errors
+- Verify database connection in `.env`
+- Ensure ports 52643/58643 are available
