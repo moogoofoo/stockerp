@@ -1,7 +1,6 @@
-
-
 # Ignore virtual environment
 venv/
+.venv/
 
 # Ignore log files
 *.log
@@ -19,7 +18,11 @@ stock_data.db
 # Ignore macOS system files
 .DS_Store
 
-venv/
 # IDE files
 .vscode/
 .idea/
+
+.idea
+/__pycache__/
+/lightning_logs/
+out
