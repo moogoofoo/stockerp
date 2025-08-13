@@ -16,6 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from mysql.connector import errorcode
 import mysql.connector
 import pymysql
+from core.pickle_models import PickledStockData
 
 from config import (
     DB_USER, 
@@ -182,7 +183,6 @@ def check_database_connectivity():
 # Convenience functions for common table creation
 def create_stock_data_table(table_name='pickled_stock_data'):
     """Create the stock data table using the default model"""
-    from core.pickle_models import PickledStockData
     return create_table_if_not_exists(table_name, PickledStockData)
 
 def create_all_default_tables():
