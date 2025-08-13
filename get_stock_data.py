@@ -6,7 +6,6 @@ from core.utils import calculate_start_date
 
 logger = logging.getLogger(__name__)
 
-
 def get_stock_data_from_db(symbol: str, period: str = 'max') -> list[dict] | None:
     """
     Fetch stock data from database as list of dicts.

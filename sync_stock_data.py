@@ -1,17 +1,35 @@
-
+from openbb import obb
 import schedule
 import time
 from core.database import db_session
-from mock_data import generate_mock_stock_data
 from core.pickle_models import PickledStockData
 import pandas as pd
 import pickle
+import datetime as dt
+
+START_DATE = "1950-01-01"
+END_DATE = dt.date.today().isoformat()
 
 def sync_to_db(symbol):
     """Sync entire stock timeseries as pickled DataFrame"""
     try:
-        # Generate mock stock data
-        df = generate_mock_stock_data(symbol, days=365)
+        resp = obb.equity.price.historical(
+            symbol=symbol,
+            start_date=START_DATE,
+            end_date=END_DATE,
+            provider="yfinance",
+            format="json"  # avoid Arrow issues
+        )
+        df = (
+            resp.to_dataframe()
+            .reset_index()
+            .assign(
+                date=lambda d: pd.to_datetime(d["date"]),
+                symbol=symbol
+            )
+            .rename(columns=str.lower)
+            .loc[:, ["symbol", "date", "open", "high", "low", "close", "volume"]]
+        )
         
         # Add symbol column to DataFrame (already included in mock data)
         

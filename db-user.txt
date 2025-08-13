@@ -1,0 +1,2 @@
+CREATE USER 'stockerp'@'%' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON *.* TO 'stockerp'@'%' WITH GRANT OPTION;

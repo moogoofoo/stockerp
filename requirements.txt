@@ -11,6 +11,7 @@ schedule>=1.1.0
 dash>=3.0.0
 dash-echarts>=0.0.12
 pytest>=7.0.0
+openbb
 
 # Development tools
 black>=24.0.0
