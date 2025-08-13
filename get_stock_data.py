@@ -1,43 +1,33 @@
-
-from datetime import datetime, timedelta
+import logging
+import pickle
 from core.database import db_session
 from core.pickle_models import PickledStockData
-import pandas as pd
-import pickle
+from core.utils import calculate_start_date
 
-def get_stock_data_from_db(symbol, period='max'):
-    """Fetch stock data from database as DataFrame"""
-    # Map period to time delta
-    period_map = {
-        '1d': timedelta(days=1),
-        '5d': timedelta(days=5),
-        '1mo': timedelta(days=30),
-        '3mo': timedelta(days=90),
-        '6mo': timedelta(days=180),
-        '1y': timedelta(days=365),
-        '2y': timedelta(days=730),
-        '5y': timedelta(days=1825),
-        'max': None
-    }
-    time_delta = period_map.get(period)
-    
+logger = logging.getLogger(__name__)
+
+
+def get_stock_data_from_db(symbol: str, period: str = 'max') -> list[dict] | None:
+    """
+    Fetch stock data from database as list of dicts.
+    Applies period filtering using calculate_start_date.
+    Returns None on error or if no data found.
+    """
+    start_date = calculate_start_date(period)
     try:
         with db_session() as session:
-            # Query pickled data for the symbol
-            result = session.query(PickledStockData).filter_by(symbol=symbol).first()
-            
-            if result:
-                # Unpickle DataFrame
-                df = pickle.loads(result.data_frame)
-                
-                # Filter by period if needed
-                if time_delta:
-                    cutoff_date = datetime.now() - time_delta
-                    df = df[df['date'] >= cutoff_date]
-                
-                # Convert to list of dicts
-                return df[['date', 'price', 'volume']].to_dict('records')
-            return None
-    except Exception as e:
-        print(f"Error retrieving stock data: {str(e)}")
+            record = session.query(PickledStockData).filter_by(symbol=symbol).first()
+            if not record or not record.data_frame:
+                return None
+            # Unpickle DataFrame
+            df = pickle.loads(record.data_frame)
+            # Filter by period if needed
+            if start_date:
+                df = df[df['date'] >= start_date]
+            # Convert dates to strings for JSON serialization
+            df['date'] = df['date'].dt.strftime('%Y-%m-%d')
+            # Return list of dicts
+            return df[['date', 'price', 'volume']].to_dict('records')
+    except Exception:
+        logger.exception(f"Error retrieving stock data for {symbol} period {period}")
         return None

@@ -5,7 +5,8 @@ import dash
 from dash import html, dcc
 import dash_echarts
 import requests
-from datetime import datetime
+from config import API_URL, DASH_HOST, DASH_PORT
+
 from urllib.parse import parse_qs
 
 app = dash.Dash(__name__)
@@ -52,7 +53,7 @@ def update_chart(n, search, period):
         symbol = params.get('symbol', ['AAPL'])[0]
         
         # Fetch data for requested symbol
-        response = requests.get(f'http://localhost:58643/api/stocks/{symbol}?period={period}')
+        response = requests.get(f'{API_URL}/api/stocks/{symbol}?period={period}')
         data = response.json()
         stock_data = data['timeseries']
         
@@ -91,10 +92,12 @@ def update_chart(n, search, period):
         }
         return option
     except Exception as e:
+        import traceback
         print(f"Error updating chart: {e}")
+        print(traceback.format_exc())
         return {}
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=52643, debug=True)
+    app.run(host=DASH_HOST, port=DASH_PORT, debug=True)
 
 

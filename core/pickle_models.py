@@ -2,6 +2,7 @@
 
 
 import pandas as pd
+import pickle
 from sqlalchemy import Column, String, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -16,6 +17,6 @@ class PickledStockData(Base):
     
     def get_dataframe(self):
         """Unpickle and return DataFrame"""
-        return pd.read_pickle(self.data_frame) if self.data_frame else None
+        return pickle.loads(self.data_frame) if self.data_frame else None
 
 
