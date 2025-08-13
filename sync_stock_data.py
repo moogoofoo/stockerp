@@ -33,16 +33,19 @@ def create_stock_data_model(table_name=DEFAULT_TABLE_NAME):
 
 def sync_stock_symbols(symbols, table_name=DEFAULT_TABLE_NAME):
     """Sync stock symbols to specified table name"""
+    from core.database_utils import setup_database_and_table
+    
     if not symbols:
         print("No symbols provided to sync")
         return
     
+    # Setup database and table
+    results = setup_database_and_table(table_name)
+    if not any([results['database']['created'], results['table']['created']]):
+        print(f"Database/table setup: {results['database']['message']}, {results['table']['message']}")
+    
     # Create dynamic model
     StockDataModel, DynamicBase = create_stock_data_model(table_name)
-    
-    # Create tables
-    engine = get_engine()
-    DynamicBase.metadata.create_all(engine, tables=[StockDataModel.__table__])
     
     def sync_single_symbol(symbol):
         """Sync a single symbol to the database"""
