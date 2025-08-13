@@ -1,6 +1,3 @@
-
-
-
 """
 Example usage of database utilities for setting up databases and tables.
 
@@ -43,20 +40,8 @@ def main():
         
         for table_type, (created, message) in results.items():
             print(f"   📊 {table_type}: {'✓' if created else '→'} {message}")
-        
-        print("\n3. Demonstrating custom table creation...")
-        # 3. Create custom tables
-        custom_tables = [
-            'portfolio_1_stock_data',
-            'backup_stock_data',
-            'test_env_data'
-        ]
-        
-        for table_name in custom_tables:
-            result = create_stock_data_table(table_name)
-            print(f"   🏗️  {table_name}: {'✓' if result[0] else '→'} {result[1]}")
-        
-        print("\n4. Listing all tables...")
+
+        print("\n3. Listing all tables...")
         # 4. List all tables (requires db connection)
         from core.database import get_engine
         engine = get_engine()

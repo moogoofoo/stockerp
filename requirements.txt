@@ -12,6 +12,7 @@ dash>=3.0.0
 dash-echarts>=0.0.12
 pytest>=7.0.0
 openbb
+mysql-connector-python
 
 # Development tools
 black>=24.0.0
