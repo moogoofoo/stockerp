@@ -1,0 +1,19 @@
+Flask>=3.1.1
+flask-cors>=3.0.10
+SQLAlchemy>=2.0.0
+PyMySQL>=1.0.0
+python-dotenv>=1.0.0
+pandas>=2.0.0
+numpy>=1.20.0
+requests>=2.0.0
+frappe-client
+schedule>=1.1.0
+dash>=3.0.0
+dash-echarts>=0.0.12
+pytest>=7.0.0
+openbb
+mysql-connector-python
+
+# Development tools
+black>=24.0.0
+flake8>=7.0.0
